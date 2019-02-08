@@ -59,48 +59,52 @@ class Worker extends Thread {                               // Class declaration
                     if (contentParser.equals("/favicon.ico")) break;
 
                     else {
+                        System.out.println("content parser = " + contentParser);
+                        String path = "localhost:2540"+contentParser;
+                        System.out.println("path = " + path);
 
-                        //ReadFiles.java given code
-                        String filedir;
+                        prout.println("HTTP/1.1 200 OK");
+                        prout.println("Content-Length: " + 100000);
+                        prout.println("Content-type: " + "text/html" + "\r\n\r\n");
+                        prout.println("<pre><h1> Index of /MyWebServer/src </h1>");
+
+
+
+                        //ReadFiles.java given code and MyWebServer Tips
                         File f1 = new File( "./src");
                         File[] strFilesDirs = f1.listFiles();
 
-                        prout.println("HTTP/1.1 200 OK");
-                        prout.println("Content-Length: " + 1000);
-                        prout.println("Content-type: " + "text/plain" + "\r\n\r\n");
-
+                        //generate dynamic html containing root directory contents
                         for(int i=0; i<strFilesDirs.length;i++){
                             if(strFilesDirs[i].isDirectory()){
-                                prout.println("Directory: " + strFilesDirs[i]);
+                                prout.println("<a href=" + strFilesDirs[i] + ">"+strFilesDirs[i]+"</a>");
                             }else if(strFilesDirs[i].isFile()){
-                                prout.println("File: " + strFilesDirs[i] + " ("+strFilesDirs[i].length()+ ")");
+                                prout.println("<a href=" + strFilesDirs[i] + ">"+strFilesDirs[i]+"</a> ("+strFilesDirs[i].length()+ ")");
                             }
                         }
 
-                    /*
-                        prout.println("<pre> " +
-                                    "<h1> Index of /MyWebServer/src </h1>" +
-                                    "<a href= \"dog.txt\">dog.txt</a> <br>" +
-                                    "<a href= \"cat.html\">cat.html</a> <br>" +
-                                    "<a href= \"MyWebServer.java\">MyWebServer.java</a> <br>" +
-                                    "</pre>");
-                    */
+                       // File f = new File(path);
+                       // InputStream file = new FileInputStream(f);
+
+                      //  byte[] buffer = new byte[10000];
+                       // while(file.available()>0)
+                      //      out.write(buffer, 0, file.read(buffer));
+
 
                         if (contentParser.endsWith(".txt")) {
-
                             prout.println("HTTP/1.1 200 OK");
                             prout.println("Content-Length: " + socketDataString.length());
                             prout.println("Content-type: " + "text/plain" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
-                            prout.println("Dog text file");
+
 
                         } else if (contentParser.endsWith(".html")){
                             prout.println("HTTP/1.1 200 OK");
                             prout.println("Content-Length: " + socketDataString.length());
                             prout.println("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
-                            prout.println("<h2>Cat html file</h2>");
                         }
+
                     }
                 }
                 System.out.flush();                                                                     // clear the out buffer

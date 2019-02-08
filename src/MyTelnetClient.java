@@ -13,10 +13,10 @@ public class MyTelnetClient{
         String textFromServer;
 
         System.out.println("Jeff's MyTelnet Client, 1.0.\n");
-        System.out.println("Using server: " + serverName + ", Port: 80");
+        System.out.println("Using server: " + serverName + ", Port: 2540");
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         try {
-            sock = new Socket(serverName, 80);
+            sock = new Socket(serverName, 2540);
             fromServer =
                     new BufferedReader(new InputStreamReader(sock.getInputStream()));
             toServer = new PrintStream(sock.getOutputStream());
