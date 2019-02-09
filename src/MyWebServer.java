@@ -33,84 +33,89 @@ class Worker extends Thread {                               // Class declaration
 
     public void run() {                                                                             // method launched with the .start() call in MyWebServer class
 
-        BufferedReader in = null;                                                                   // sets our input to null
-
         try {
-            in = new BufferedReader(new InputStreamReader(sock.getInputStream()));                  // launched new objects to obtain our input
-
-            OutputStream out = new BufferedOutputStream(sock.getOutputStream());                     //code from "Writing http headers" in Elliot MyWebServer Tips
-            PrintStream prout = new PrintStream(out, true);                                 // code from "Writing http headers" in Elliot MyWebServer Tips
-
-            String socketDataString;                                                                 // local definition of socketData of type String
-
-            socketDataString = in.readLine();                                                       // repeatedly read in data from socket into socketDataString
-            System.out.println(socketDataString);
-
-            while (true) {
-
-                String zeroLengthStringChecker = in.readLine();
-
-                if(zeroLengthStringChecker==null || zeroLengthStringChecker.length()==0) break;                     // check request secondary readlines for zero string length and break out of loop if found. Fixes index errors
-
-                else if (socketDataString != null || socketDataString.length() != 0) {                                                       // if this read in data isn't null, print it to the console of MyWebServer
-
-                    String contentParser = socketDataString.substring(4, socketDataString.length() - 9);
-
-                    if (contentParser.equals("/favicon.ico")) break;
-
-                    else {
-                        System.out.println("content parser = " + contentParser);
-                        String path = "localhost:2540"+contentParser;
-                        System.out.println("path = " + path);
-
-                        prout.println("HTTP/1.1 200 OK");
-                        prout.println("Content-Length: " + 100000);
-                        prout.println("Content-type: " + "text/html" + "\r\n\r\n");
-                        prout.println("<pre><h1> Index of /MyWebServer/src </h1>");
+            PrintStream in = new PrintStream(sock.getOutputStream());                     //code from "Writing http headers" prout Elliot MyWebServer Tips
+            BufferedReader prout = new BufferedReader(new InputStreamReader(sock.getInputStream()));                  // launched new objects to obtain our input
 
 
+            String fromBrowserString = prout.readLine();                                                                 // local definition of socketData of type String
 
-                        //ReadFiles.java given code and MyWebServer Tips
-                        File f1 = new File( "./src");
-                        File[] strFilesDirs = f1.listFiles();
+            if(fromBrowserString==null || fromBrowserString.length()==0) System.out.println("null found");                                            // check request secondary readlines for zero string length . Fixes index errors
 
+            else {                                                                                                                                  // if this read prout data isn't null, print it to the console of MyWebServer
+
+                String fileName = fromBrowserString.substring(4, fromBrowserString.length() - 9);
+
+                if (fileName.equals("/favicon.ico")); //System.out.println("favicon found and ignored");
+
+                else if (!fileName.contains(".ico")){
+                    in.print("HTTP/1.1 200 OK");
+                    in.print("Content-Length: " + 100000);
+                    in.print("Content-type: " + "text/html" + "\r\n\r\n");
+                    in.print("<pre><h1> Index of /MyWebServer/src </h1>");
+
+/*
+                    File f1 = new File("."+fileName);
+                    String directoryRoot = f1.getCanonicalPath();
+                    System.out.println("Directory root is: " + directoryRoot);
+*/
+
+                    //ReadFiles.java given code and MyWebServer Tips
+                    File f1 = new File( "./" + fileName + "/");
+                    File[] strFilesDirs = f1.listFiles();
+
+
+                    if(strFilesDirs!=null) {
                         //generate dynamic html containing root directory contents
-                        for(int i=0; i<strFilesDirs.length;i++){
-                            if(strFilesDirs[i].isDirectory()){
-                                prout.println("<a href=" + strFilesDirs[i] + ">"+strFilesDirs[i]+"</a>");
-                            }else if(strFilesDirs[i].isFile()){
-                                prout.println("<a href=" + strFilesDirs[i] + ">"+strFilesDirs[i]+"</a> ("+strFilesDirs[i].length()+ ")");
+                        for (int i = 0; i < strFilesDirs.length; i++) {
+                            if (strFilesDirs[i].isDirectory()) {
+                                System.out.println("get name = " + strFilesDirs[i].getName());
+                                in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "/</a><br>");
+                            } else if (strFilesDirs[i].isFile()) {
+                                System.out.println("get name = " + strFilesDirs[i].getName());
+                                in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "</a> (" + strFilesDirs[i].length() + ")<br>");
                             }
                         }
+                    }
 
-                       // File f = new File(path);
-                       // InputStream file = new FileInputStream(f);
+                    else if (!fileName.equals("/") && f1.isFile()) {
 
-                      //  byte[] buffer = new byte[10000];
-                       // while(file.available()>0)
-                      //      out.write(buffer, 0, file.read(buffer));
+                        InputStream readBrowserInput = new FileInputStream(fileName.substring(1,fileName.length()));        // remove leading slash
+                        File browserFile = new File(fileName.substring(1,fileName.length()));                               //remove leading slash
+
+                        if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {
+                           // in.print("HTTP/1.1 200 OK");
+                            //in.print("Content-Length: " + browserFile.length());
+                            //in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
+
+                            byte[] buffer = new byte[10000];
+                            int bufferBytesRead = readBrowserInput.read(buffer);
+                            System.out.println("number of bytes = " + bufferBytesRead);
+                            in.write(buffer, 0, bufferBytesRead);
+                            in.flush();
+                            readBrowserInput.close();
 
 
-                        if (contentParser.endsWith(".txt")) {
-                            prout.println("HTTP/1.1 200 OK");
-                            prout.println("Content-Length: " + socketDataString.length());
-                            prout.println("Content-type: " + "text/plain" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
+                        } else if (fileName.endsWith(".html")){
+                           // in.print("HTTP/1.1 200 OK");
+                            //in.print("Content-Length: " + browserFile.length());
+                           // in.print("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
-
-
-                        } else if (contentParser.endsWith(".html")){
-                            prout.println("HTTP/1.1 200 OK");
-                            prout.println("Content-Length: " + socketDataString.length());
-                            prout.println("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
-
+                            byte[] buffer = new byte[10000];
+                            int bufferBytesRead = readBrowserInput.read(buffer);
+                            System.out.println("number of bytes = " + bufferBytesRead);
+                            in.write(buffer, 0, bufferBytesRead);
+                            in.flush();
+                            readBrowserInput.close();
                         }
-
                     }
                 }
-                System.out.flush();                                                                     // clear the out buffer
-                sock.close();                                                                           // close this current connection
             }
+            System.out.flush();                                                                     // clear the out buffer
+            sock.close();                                                                           // close this current connection
+
         } catch (IOException ioe) {
+            ioe.printStackTrace();
             System.out.println("Connection closed, rebooting and listening again...");                  // handles the IOException's and displays the error to the console
         }
     }
