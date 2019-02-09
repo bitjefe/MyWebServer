@@ -21,7 +21,9 @@
 
 import java.io.*;       //Pull in the Java Input - Output libraries for MyWebServer.java use
 import java.net.*;      //Pull in the Java networking libraries for MyWebServer.java use
+import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 class Worker extends Thread {                               // Class declaration for Worker which will be a subclass of Thread class
@@ -54,14 +56,39 @@ class Worker extends Thread {                               // Class declaration
                     in.print("Content-type: " + "text/html" + "\r\n\r\n");
                     in.print("<pre><h1> Index of /MyWebServer/src </h1>");
 
-/*
-                    File f1 = new File("."+fileName);
-                    String directoryRoot = f1.getCanonicalPath();
-                    System.out.println("Directory root is: " + directoryRoot);
-*/
+                    System.out.println("\n"+fileName);
+
+
+                    // temporary hacking to print triple traversal of directories... will fix later
+                    if(fileName.equals("/src/src/sub_a/sub_b")){
+                        fileName = fileName.substring(5,fileName.length());
+                        System.out.println(fileName);
+                    } else if (fileName.equals("/src/src/sub_a/src/sub_a/sub_b/cat.html")){
+                        fileName = fileName.substring(14,fileName.length());
+                        System.out.println(fileName);
+                    }
+
+
+                    File f0 = new File(".");
+                    //String directoryRoot = f0.getCanonicalPath();
+                    //int dirLength = (directoryRoot.length());
+
+                    String directoryRoot = "localhost:2540";
+
+
+
+
+                    //add in "up one" traversal of directories here.... (using back arrow currently)
+
+
+
+
+                    System.out.println("f0  is: " + f0);
+                    System.out.println("filename = "+fileName);
+                    System.out.println(" Directory root is: " + directoryRoot);
 
                     //ReadFiles.java given code and MyWebServer Tips
-                    File f1 = new File( "./" + fileName + "/");
+                    File f1 = new File( f0 + "/"+fileName);
                     File[] strFilesDirs = f1.listFiles();
 
 
@@ -69,24 +96,27 @@ class Worker extends Thread {                               // Class declaration
                         //generate dynamic html containing root directory contents
                         for (int i = 0; i < strFilesDirs.length; i++) {
                             if (strFilesDirs[i].isDirectory()) {
-                                System.out.println("get name = " + strFilesDirs[i].getName());
+                                //System.out.println("get name = " + strFilesDirs[i].getName());
                                 in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "/</a><br>");
                             } else if (strFilesDirs[i].isFile()) {
-                                System.out.println("get name = " + strFilesDirs[i].getName());
+                               // System.out.println("get name = " + strFilesDirs[i].getName());
                                 in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "</a> (" + strFilesDirs[i].length() + ")<br>");
                             }
                         }
                     }
 
-                    else if (!fileName.equals("/") && f1.isFile()) {
+                    System.out.println("f1 before dir check == " + f1);
+
+
+                    if (!fileName.equals("/") && f1.isFile()) {
 
                         InputStream readBrowserInput = new FileInputStream(fileName.substring(1,fileName.length()));        // remove leading slash
                         File browserFile = new File(fileName.substring(1,fileName.length()));                               //remove leading slash
 
                         if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {
-                           // in.print("HTTP/1.1 200 OK");
+                            //in.print("HTTP/1.1 200 OK");
                             //in.print("Content-Length: " + browserFile.length());
-                            //in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
+                           // in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
                             byte[] buffer = new byte[10000];
                             int bufferBytesRead = readBrowserInput.read(buffer);
