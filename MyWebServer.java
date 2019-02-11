@@ -56,17 +56,6 @@ class Worker extends Thread {                               // Class declaration
                     in.print("Content-type: " + "text/html" + "\r\n\r\n");
                     in.print("<pre><h1> Index of /MyWebServer/src </h1>");
 
-                    // temporary hacking to print triple traversal of directories... will fix later
-                    if(fileName.equals("/src/src/sub_a/sub_b")){
-                        fileName = fileName.substring(5,fileName.length());
-                    } else if (fileName.equals("/src/src/sub_a/src/sub_a/sub_b/cat.html")){
-                        fileName = fileName.substring(14,fileName.length());
-                    } else if (fileName.equals("/sub_a/sub_a/sub_b/cat.html")){
-                        fileName = fileName.substring(6, fileName.length());
-                    }
-
-                    System.out.println(fileName);
-
                     //ReadFiles.java given code and MyWebServer Tips
                     File f1 = new File( "./"+fileName + "/");
                     File[] strFilesDirs = f1.listFiles();
@@ -76,14 +65,15 @@ class Worker extends Thread {                               // Class declaration
                         for (int i = 0; i < strFilesDirs.length; i++) {
                             if (strFilesDirs[i].isDirectory()) {
                                 //System.out.println("get name = " + strFilesDirs[i].getName());
-                                in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "/</a><br>");
+                                in.print("<a href=\"" + strFilesDirs[i].getName()  + "/\">/" + strFilesDirs[i].getName() + "/</a><br>");
                             } else if (strFilesDirs[i].isFile()) {
                                // System.out.println("get name = " + strFilesDirs[i].getName());
-                                in.print("<a href=" + strFilesDirs[i] + ">" + strFilesDirs[i].getName() + "</a> (" + strFilesDirs[i].length() + ")<br>");
+                                in.print("<a href=\"" + strFilesDirs[i].getName() + "\">" + strFilesDirs[i].getName() + "</a> (" + strFilesDirs[i].length() + ")<br>");
                             }
                         }
                     }
 
+                    in.print("<h3><a href=" + "\"http://localhost:2540\"" + ">" + "Back to Home Directory" + "</a></h3>");
 
 
                     if (!fileName.equals("/") && f1.isFile()) {
@@ -92,12 +82,10 @@ class Worker extends Thread {                               // Class declaration
                         File browserFile = new File(fileName.substring(1,fileName.length()));                               //remove leading slash
 
 
-
-
                         if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {
-                            //in.print("HTTP/1.1 200 OK");
-                            //in.print("Content-Length: " + browserFile.length());
-                           // in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
+                            in.print("HTTP/1.1 200 OK");
+                            in.print("Content-Length: " + browserFile.length());
+                            in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
                             byte[] buffer = new byte[10000];
                             int bufferBytesRead = readBrowserInput.read(buffer);
@@ -108,9 +96,9 @@ class Worker extends Thread {                               // Class declaration
 
 
                         } else if (fileName.endsWith(".html")){
-                           // in.print("HTTP/1.1 200 OK");
-                            //in.print("Content-Length: " + browserFile.length());
-                           // in.print("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
+                            in.print("HTTP/1.1 200 OK");
+                            in.print("Content-Length: " + browserFile.length());
+                            in.print("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
 
                             byte[] buffer = new byte[10000];
                             int bufferBytesRead = readBrowserInput.read(buffer);
@@ -121,7 +109,7 @@ class Worker extends Thread {                               // Class declaration
                         }
                     }
 
-                    in.print("<h3><a href=" + "\"http://localhost:2540\"" + ">" + "Back to Home Directory" + "</a></h3>");
+
                 }
             }
             System.out.flush();                                                                     // clear the out buffer
