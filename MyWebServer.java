@@ -56,41 +56,20 @@ class Worker extends Thread {                               // Class declaration
                     in.print("Content-type: " + "text/html" + "\r\n\r\n");
                     in.print("<pre><h1> Index of /MyWebServer/src </h1>");
 
-                    System.out.println("\n"+fileName);
-
-
                     // temporary hacking to print triple traversal of directories... will fix later
                     if(fileName.equals("/src/src/sub_a/sub_b")){
                         fileName = fileName.substring(5,fileName.length());
-                        System.out.println(fileName);
                     } else if (fileName.equals("/src/src/sub_a/src/sub_a/sub_b/cat.html")){
                         fileName = fileName.substring(14,fileName.length());
-                        System.out.println(fileName);
+                    } else if (fileName.equals("/sub_a/sub_a/sub_b/cat.html")){
+                        fileName = fileName.substring(6, fileName.length());
                     }
 
-
-                    File f0 = new File(".");
-                    //String directoryRoot = f0.getCanonicalPath();
-                    //int dirLength = (directoryRoot.length());
-
-                    String directoryRoot = "localhost:2540";
-
-
-
-
-                    //add in "up one" traversal of directories here.... (using back arrow currently)
-
-
-
-
-                    System.out.println("f0  is: " + f0);
-                    System.out.println("filename = "+fileName);
-                    System.out.println(" Directory root is: " + directoryRoot);
+                    System.out.println(fileName);
 
                     //ReadFiles.java given code and MyWebServer Tips
-                    File f1 = new File( f0 + "/"+fileName);
+                    File f1 = new File( "./"+fileName + "/");
                     File[] strFilesDirs = f1.listFiles();
-
 
                     if(strFilesDirs!=null) {
                         //generate dynamic html containing root directory contents
@@ -105,13 +84,15 @@ class Worker extends Thread {                               // Class declaration
                         }
                     }
 
-                    System.out.println("f1 before dir check == " + f1);
 
 
                     if (!fileName.equals("/") && f1.isFile()) {
 
                         InputStream readBrowserInput = new FileInputStream(fileName.substring(1,fileName.length()));        // remove leading slash
                         File browserFile = new File(fileName.substring(1,fileName.length()));                               //remove leading slash
+
+
+
 
                         if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {
                             //in.print("HTTP/1.1 200 OK");
@@ -139,6 +120,8 @@ class Worker extends Thread {                               // Class declaration
                             readBrowserInput.close();
                         }
                     }
+
+                    in.print("<h3><a href=" + "\"http://localhost:2540\"" + ">" + "Back to Home Directory" + "</a></h3>");
                 }
             }
             System.out.flush();                                                                     // clear the out buffer
