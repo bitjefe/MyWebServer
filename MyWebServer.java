@@ -6,24 +6,22 @@
     > javac MyWebServer.java
 
 4. Run Instructions
-    > java MyWebServer
+    // > java MyWebServer
 
    List of files needed for running the program
     - MyWebServer.java
     - http-streams.txt
     - serverlog.txt
     - checklist-mywebserver.html
+    - addnums.html
 
 5. My Notes
-
+    - could not get a "return to home directory" hyperlink to print on the browser screen when I was in a non-directory file (ie. dog.txt / cat.html / MyWebServer.java)
 */
 
 
-import java.io.*;       //Pull in the Java Input - Output libraries for MyWebServer.java use
-import java.net.*;      //Pull in the Java networking libraries for MyWebServer.java use
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.Stream;
+import java.io.*;                                           //Pull in the Java Input - Output libraries for MyWebServer.java use
+import java.net.*;                                          //Pull in the Java networking libraries for MyWebServer.java use
 
 
 class Worker extends Thread {                               // Class declaration for Worker which will be a subclass of Thread class
@@ -36,82 +34,48 @@ class Worker extends Thread {                               // Class declaration
     public void run() {                                                                             // method launched with the .start() call in MyWebServer class
 
         try {
-            PrintStream in = new PrintStream(sock.getOutputStream());                     //code from "Writing http headers" prout Elliot MyWebServer Tips
+            PrintStream in = new PrintStream(sock.getOutputStream());                                                  // starter code from "Writing http headers" prout Elliot MyWebServer Tips
             BufferedReader prout = new BufferedReader(new InputStreamReader(sock.getInputStream()));                  // launched new objects to obtain our input
-
 
             String fromBrowserString = prout.readLine();                                                                 // local definition of socketData of type String
 
-            if(fromBrowserString==null || fromBrowserString.length()==0) System.out.println("null found");                                            // check request secondary readlines for zero string length . Fixes index errors
+            if(fromBrowserString==null || fromBrowserString.length()==0) System.out.println("null found");         // check request secondary readlines for zero string length . Fixes index errors
 
             else {                                                                                                                                  // if this read prout data isn't null, print it to the console of MyWebServer
 
-                String fileName = fromBrowserString.substring(4, fromBrowserString.length() - 9);
+                String fileName = fromBrowserString.substring(4, fromBrowserString.length() - 9);                                                   // parse the fileName string for the "fromBrowserString" above use .substring method
 
-                if (fileName.equals("/favicon.ico")); //System.out.println("favicon found and ignored");
+                if (fileName.equals("/favicon.ico")); //System.out.println("favicon detected and ignored");                                            // favicon detector, catch and do nothing but print statement to console
 
-                else if (!fileName.contains(".ico")){
-                    in.print("HTTP/1.1 200 OK");
-                    in.print("Content-Length: " + 100000);
-                    in.print("Content-type: " + "text/html" + "\r\n\r\n");
-                    in.print("<pre><h1> Index of /MyWebServer/src </h1>");
-
-                    //ReadFiles.java given code and MyWebServer Tips
-                    File f1 = new File( "./"+fileName + "/");
-                    File[] strFilesDirs = f1.listFiles();
-
-                    if(strFilesDirs!=null) {
-                        //generate dynamic html containing root directory contents
-                        for (int i = 0; i < strFilesDirs.length; i++) {
-                            if (strFilesDirs[i].isDirectory()) {
-                                //System.out.println("get name = " + strFilesDirs[i].getName());
-                                in.print("<a href=\"" + strFilesDirs[i].getName()  + "/\">/" + strFilesDirs[i].getName() + "/</a><br>");
-                            } else if (strFilesDirs[i].isFile()) {
-                               // System.out.println("get name = " + strFilesDirs[i].getName());
-                                in.print("<a href=\"" + strFilesDirs[i].getName() + "\">" + strFilesDirs[i].getName() + "</a> (" + strFilesDirs[i].length() + ")<br>");
-                            }
-                        }
+                else {
+                    if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {                                          // send text/plain content type HTTP header for .txt and .java files
+                        System.out.println(fileName);
+                        String contentType = "text/plain";
+                        fileToBrowser(fileName, contentType, in);
                     }
-
-                    in.print("<h3><a href=" + "\"http://localhost:2540\"" + ">" + "Back to Home Directory" + "</a></h3>");
-
-
-                    if (!fileName.equals("/") && f1.isFile()) {
-
-                        InputStream readBrowserInput = new FileInputStream(fileName.substring(1,fileName.length()));        // remove leading slash
-                        File browserFile = new File(fileName.substring(1,fileName.length()));                               //remove leading slash
-
-
-                        if (fileName.endsWith(".txt") || fileName.endsWith(".java")) {
-                            in.print("HTTP/1.1 200 OK");
-                            in.print("Content-Length: " + browserFile.length());
-                            in.print("Content-type: text/plain \r\n\r\n");                     // add custom function for parsing text/html vs plain/text
-
-                            byte[] buffer = new byte[10000];
-                            int bufferBytesRead = readBrowserInput.read(buffer);
-                            System.out.println("number of bytes = " + bufferBytesRead);
-                            in.write(buffer, 0, bufferBytesRead);
-                            in.flush();
-                            readBrowserInput.close();
-
-
-                        } else if (fileName.endsWith(".html")){
-                            in.print("HTTP/1.1 200 OK");
-                            in.print("Content-Length: " + browserFile.length());
-                            in.print("Content-type: " + "text/html" + "\r\n\r\n");                     // add custom function for parsing text/html vs plain/text
-
-                            byte[] buffer = new byte[10000];
-                            int bufferBytesRead = readBrowserInput.read(buffer);
-                            System.out.println("number of bytes = " + bufferBytesRead);
-                            in.write(buffer, 0, bufferBytesRead);
-                            in.flush();
-                            readBrowserInput.close();
-                        }
+                    else if (fileName.endsWith(".html")){                                                                       // send text/html content type HTTP header for .html files
+                        System.out.println(fileName);
+                        String contentType = "text/html";
+                        fileToBrowser(fileName, contentType, in);
                     }
-
-
+                    else if (fileName.contains("cgi")){                                                                          // if the request from the browser contains the CGI designation, call the addNums function
+                        System.out.println(fileName);
+                        String contentType = "text/html";
+                        myAddNums(fileName, contentType, in);                                                                    // print the addNums result to the browser
+                    }
+                    else if (fileName.endsWith("/")){
+                        System.out.println(fileName);
+                        String contentType = "text/html";                                                                   // send text/html content type HTTP header for .html files containing directories
+                        dirToBrowser(fileName, contentType, in);
+                    }
+                    else if(!fileName.endsWith("/")){                                                                       // send text/plain HTTP header for the remaining cases that filter down through this conditional block
+                        System.out.println(fileName);
+                        String contentType = "text/plain";
+                        fileToBrowser(fileName, contentType, in);
+                    }
                 }
             }
+
             System.out.flush();                                                                     // clear the out buffer
             sock.close();                                                                           // close this current connection
 
@@ -120,6 +84,79 @@ class Worker extends Thread {                               // Class declaration
             System.out.println("Connection closed, rebooting and listening again...");                  // handles the IOException's and displays the error to the console
         }
     }
+
+
+    public void dirToBrowser(String fileName, String contentType, PrintStream in){
+        in.print("HTTP/1.1 200 OK");                                                                                                    // send html HTTP header to print directory and header
+        in.print("Content-Length: " + 100000);                                                                                          // fake our content length to 10000 to ensure all contents are printed to browser
+        in.print("Content-type: " + contentType + "\r\n\r\n");                                                                          // send text/html content type to print html header
+
+
+        //ReadFiles.java given code and MyWebServer Tips
+        File f1 = new File( "./"+fileName + "/");                                                                              // declare File f1 to be used in directory generation
+        File[] fileDirectoryArr = f1.listFiles();                                                                                           // File array to hold all files listed
+
+        if(fileDirectoryArr!=null) {
+            //generate dynamic html containing directory and file contents if the array of files is not null
+            for (int i = 0; i < fileDirectoryArr.length; i++) {
+                if (fileDirectoryArr[i].isDirectory()) {
+                    in.print("<a href=\"" + fileDirectoryArr[i].getName()  + "/\">/" + fileDirectoryArr[i].getName() + "/</a><br>");
+                } else if (fileDirectoryArr[i].isFile()) {
+                    in.print("<a href=\"" + fileDirectoryArr[i].getName() + "\">" + fileDirectoryArr[i].getName() + "</a> (" + fileDirectoryArr[i].length() + ")<br>");
+                }
+            }
+        }
+
+        in.print("<h3><a href=" + "\"http://localhost:2540\"" + ">" + "Return to Root of MyWebServer" + "</a></h3>");                           //prints a link to the home directory on every page
+
+    }
+
+
+
+    public void fileToBrowser(String fileName, String contentType, PrintStream in) {
+        File f0 = new File( fileName);                                                                                       // declare File f1 to be used in directory generation
+
+        if (!fileName.equals("/") && !f0.isFile()) {                                                                          //if the fileName doesn't end with a / and it's a file, enter the conditional
+            try{
+                InputStream readBrowserInput = new FileInputStream(fileName.substring(1, fileName.length()));                                // remove leading slash
+                File browserFile = new File(fileName.substring(1, fileName.length()));                                                       //remove leading slash
+
+                in.print("HTTP/1.1 200 OK");                                                                        // send HTTP header with correct length and content type to browser
+                in.print("Content-Length: " + browserFile.length());
+                in.print("Content-type: "+ contentType + "\r\n\r\n");
+
+                byte[] buffer = new byte[10000];                                                                    // create buffer to hold contents of fileName
+                int bufferBytesRead = readBrowserInput.read(buffer);                                                // read in all of fileName contents
+                in.write(buffer, 0, bufferBytesRead);                                                               // write the buffer to the browser
+                in.flush();                                                                                         // clear the buffer
+                readBrowserInput.close();                                                                           // close the InputStream
+
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                System.out.println("Connection closed, rebooting and listening again...");                  // handles the IOException's and displays the error to the console
+            }
+        }
+    }
+
+    public void myAddNums(String fileName, String contentType, PrintStream in){                                                                 // custom addNums function that returns the sum of two input numbers to browser
+
+        String fileNameTrimmed = fileName.substring(22,fileName.length());                                  // parse the initial 21 characters off the fileName string
+        String [] nameNums = fileNameTrimmed.split("[=&]");                                                 // split person, yourName, num1, input of num1, num2, input of num2 into String array
+
+        String name = nameNums[1];                                                                          // local definition of name, set name input to nameNum[1] index of type String
+        String num1 = nameNums[3];                                                                          // local definition of num1, set num1 input to nameNum[3] index of type String
+        String num2 = nameNums[5];                                                                          // local definition of num2, set num2 input to nameNum[5] index of type String
+        int numSum = Integer.parseInt(num1) + Integer.parseInt(num2);                                       // local definition of numSum, convert num1 and num2 Strings to Integers and add them
+
+        String replytoBrowser = "Dear "+name+", the sum of "+num1+" and "+num2+" is "+numSum;               // local definition of replyToBrowser of type String
+        int replyToBrowserLen = replytoBrowser.length();
+
+        in.print("HTTP/1.1 200 OK");
+        in.print("Content-Length: " + replyToBrowserLen);
+        in.print("Content-type: " + contentType + "\r\n\r\n");
+        in.print("<p>"+replytoBrowser+"</p>");                                                 // print the replyToBrowser to the browser as formatted HTML
+    }
+
 }
 
 public class MyWebServer {

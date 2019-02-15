@@ -1,0 +1,32 @@
+/*
+
+1. Jeff Wiand / 2-6-19
+2. Java 1.8
+3. Compilation Instructions:
+4. Run Instructions
+  List of files needed for running the program
+    - MyWebServer.java
+    - http-streams.txt
+    - serverlog.txt
+    - checklist-mywebserver.html
+    - addnums.html
+
+5. My Notes
+    - Serverlog.txt shows directory traversals through output to console
+*/
+
+
+//Going from root directory to to cat.html in nested sub_a/sub_b/ directory
+
+/
+/sub_a/
+/sub_a/sub_b/
+/sub_a/sub_b/cat.html
+
+
+//Going to the addnums file and filling out the form
+
+/addnums.html
+/cgi/addnums.fake-cgi?person=Jeff&num1=8&num2=17
+
+
